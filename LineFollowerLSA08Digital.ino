@@ -42,3 +42,46 @@ void setup() {
 
     Serial.begin(9600);
 }
+
+void loop() {
+    // reading LSA08 sensor data 
+    for (int i = 2; i <= 9; i++){
+        sensor[i - 2] = digitalRead(i);  
+    }
+
+    // printing LSA08 sensor data on serial monitor
+//    if (!x)
+//    {   
+//        for (int i = 2; i <= 9; i++){
+//            Serial.println(sensor[i-2]);
+//            
+//        }
+//        x = true;
+//    }
+
+    correction = {K2 * sensor[0] + K3 * sensor[1] + K4 * sensor[2] - (K7 * sensor[5] + K8 * sensor[6] + K9 * sensor[7])};
+
+    LSpeed = motorspeed - correction;
+    RSpeed = motorspeed + correction;
+
+    // motor speed is passed to MDD10A as pwm pulse, so it has to be constrained between 0 to 255. For eg. 255 will rotate a 300 rpm motor at the highest speed
+    LSpeed = constrain(LSpeed, 0, 255);
+    RSpeed = constrain(RSpeed, 0, 255);
+
+    moveForward(LSpeed, RSpeed);
+    // moveForward(255,255);
+}
+
+void moveForward(int LSpeed, int RSpeed) {
+    // function to move the bot at a particular speed 
+    digitalWrite(dir1, LOW);
+    digitalWrite(dir2, LOW);
+    analogWrite(pwm1, LSpeed); 
+    analogWrite(pwm2, RSpeed);
+}
+
+void wait() {
+    // Function to makes the robot stay
+    analogWrite(pwm1, 0);
+    analogWrite(pwm2, 0);
+}
